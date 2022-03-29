@@ -1,10 +1,10 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   CrosswordGrid,
   CrosswordProvider,
   CrosswordProviderImperative,
   DirectionClues,
-  AnswerTuple,
   CluesInput,
 } from "@jaredreisinger/react-crossword";
 import axios from "axios";
