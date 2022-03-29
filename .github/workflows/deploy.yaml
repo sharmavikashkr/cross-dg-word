@@ -1,0 +1,49 @@
+name: Deploy to Azure
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  STORAGE_ACCOUNT: crosswordsdg
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    name: deploy
+
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x, 14.x, 15.x]
+
+    steps:
+    - name: 'Checkout GitHub Action'
+      uses: actions/checkout@master
+
+    - name: 'Login to Azure'
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+        
+    - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+    
+    - name: 'Build Web'
+      run: |
+        npm install
+        npm run build
+    
+    - name: Upload to blob storage
+      uses: azure/CLI@v1
+      with:
+        inlineScript: |
+          az storage blob upload-batch --account-name ${{ env.STORAGE_ACCOUNT }}  --auth-mode key -d '$web' -s ./build
+    
+    # Azure logout
+    - name: Azure logout
+      run: |
+        az logout
+      if: always()

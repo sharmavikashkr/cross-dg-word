@@ -11,10 +11,8 @@ import axios from "axios";
 import { Button, ButtonGroup, Container, Grid } from "@mui/material";
 import wordsToNumbers from "words-to-numbers";
 
-// const { Deepgram } = require("@deepgram/sdk");
-// const deepgram = new Deepgram("4652d717e1291dbd815919a855ab1d27d16e87c3");
-
 function App() {
+  let socket: WebSocket;
   const mic: any = {};
   const [transcript, setTranscript] = useState("");
   const [shuffle, setShuffle] = useState(0);
@@ -50,22 +48,29 @@ function App() {
       beginTranscription();
       return mic.mediaRecorder;
     }
-    console.log('listening..');
+    console.log("listening..");
     fetchData();
   }, [puzzle]);
+
+  useEffect(() => {
+    setYear((Math.floor(Math.random() * 42) + 1976).toString());
+    setMonth(("0" + (Math.floor(Math.random() * 12) + 1)).slice(-2));
+    setDay(("0" + (Math.floor(Math.random() * 31) + 1)).slice(-2));
+  }, [shuffle]);
 
   useEffect(() => {
     const crosswords_url = "https://raw.githubusercontent.com/doshea/nyt_crosswords/master/" + year + "/" + month + "/" + day + ".json";
     axios
       .get(crosswords_url)
       .then((response) => {
+        console.log("formatting puzzle");
         formatPuzzle(response.data);
       })
       .catch((ex: any) => {
         console.error(ex);
         setShuffle(shuffle + 1);
       });
-  }, [year, month, day]);
+  }, [year]);
 
   function formatPuzzle(puzzleData: any) {
     const rowSize = parseInt(puzzleData?.size?.rows);
@@ -101,8 +106,11 @@ function App() {
   }
 
   async function beginTranscription() {
-    const { key } = await fetch("http://localhost:8000/deepgram-token").then((r) => r.json());
-    const socket = new WebSocket("wss://api.deepgram.com/v1/listen?punctuate=true&diarize=true&interim_results=true", ["token", key]);
+    const key = await fetch("https://crosswords-dg.azurewebsites.net/api/deepgramkeyapi").then((r) => r.text());
+    if (socket) {
+      socket.close();
+    }
+    socket = new WebSocket("wss://api.deepgram.com/v1/listen?punctuate=true&diarize=true&interim_results=true", ["token", key]);
     socket.onopen = () => {
       mic.mediaRecorder.addEventListener("dataavailable", (event: any) => {
         if (event.data.size > 0 && socket.readyState === 1) socket.send(event.data);
@@ -114,25 +122,33 @@ function App() {
 
   function transcriptionResults(data: any) {
     const { is_final, channel } = data;
-    const { transcript, words } = channel.alternatives[0];
+    let { transcript } = channel.alternatives[0];
     if (!transcript) return;
 
     if (is_final) {
-      console.log(words, transcript);
+      transcript = transcript.toUpperCase();
+      console.log("transcript", transcript);
       setTranscript(transcript);
-      let type = "";
-      if (transcript.includes("across")) {
-        type = "across";
-      } else if (transcript.includes("down")) {
-        type = "down";
-      } else {
-        return;
+      if (transcript.includes("ACROSS")) {
+        fillWord(transcript, "ACROSS");
+      } else if (transcript.includes("DOWN")) {
+        fillWord(transcript, "DOWN");
+      } else if (transcript.includes("RESET")) {
+        crosswordProvider.current?.reset();
+      } else if (transcript.includes("NEW GAME")) {
+        crosswordProvider.current?.reset();
+        setShuffle(shuffle + 1);
+      } else if (transcript.includes("VALIDATE")) {
+        const isCorrect = crosswordProvider.current?.isCrosswordCorrect();
+        console.log("isCorrect", isCorrect);
       }
-      let commanArr = transcript.split(type);
+    }
+
+    function fillWord(transcript: string, direction: string) {
+      let commanArr = transcript.split(direction);
       if (commanArr.length < 2) {
         return;
       }
-
       console.log("command array", commanArr);
 
       let boxnum = wordsToNumbers(commanArr[0]);
@@ -146,7 +162,7 @@ function App() {
 
       const guess = commanArr[1].replaceAll(" ", "").replace(",", "").replace(".", "");
       console.log("guess", guess);
-      if (type === "across") {
+      if (direction === "ACROSS") {
         console.log("hint", puzzle.across);
         const answer = puzzle.across[boxnum].answer;
         console.log("answer", answer);
@@ -159,7 +175,7 @@ function App() {
           const c = guess.charAt(i);
           crosswordProvider.current?.setGuess(posR, posC + i, c);
         }
-      } else if (type === "down") {
+      } else if (direction === "DOWN") {
         const answer = puzzle.down[boxnum].answer;
         console.log("answer", answer);
         if (answer.length !== guess.length) {
@@ -173,157 +189,14 @@ function App() {
         }
       }
     }
-
-    // Pull out speaker and word
-    // phrases.pending = words.map((w: any) => {
-    //   const { punctuated_word: word, speaker } = w;
-    //   return { word, speaker };
-    // });
-
-    // // If this is the final version of the phrase, push it into final phrases array
-    // if (is_final) {
-    //   phrases.final.push(...phrases.pending);
-    //   phrases.pending = [];
-    // }
-    // setPhrases(phrases);
   }
-
-  // We don't really *do* anything with callbacks from the Crossword component,
-  // but we can at least show that they are happening.  You would want to do
-  // something more interesting than simply collecting them as messages.
-  const messagesRef = useRef<HTMLPreElement>(null);
-  const [messages, setMessages] = useState<string[]>([]);
-
-  const addMessage = useCallback((message: string) => {
-    setMessages((m) => m.concat(`${message}\n`));
-  }, []);
-
-  useEffect(() => {
-    if (!messagesRef.current) {
-      return;
-    }
-    const { scrollHeight } = messagesRef.current;
-    messagesRef.current.scrollTo(0, scrollHeight);
-  }, [messages]);
-
-  // onCorrect is called with the direction, number, and the correct answer.
-  const onCorrect = useCallback(
-    (direction, number, answer) => {
-      addMessage(`onCorrect: "${direction}", "${number}", "${answer}"`);
-    },
-    [addMessage]
-  );
-
-  // onLoadedCorrect is called with an array of the already-correct answers,
-  // each element itself is an array with the same values as in onCorrect: the
-  // direction, number, and the correct answer.
-  const onLoadedCorrect = useCallback(
-    (answers: AnswerTuple[]) => {
-      addMessage(
-        `onLoadedCorrect:\n${answers.map(([direction, number, answer]) => `    - "${direction}", "${number}", "${answer}"`).join("\n")}`
-      );
-    },
-    [addMessage]
-  );
-
-  // onCrosswordCorrect is called with a truthy/falsy value.
-  const onCrosswordCorrect = useCallback(
-    (isCorrect: boolean) => {
-      addMessage(`onCrosswordCorrect: ${JSON.stringify(isCorrect)}`);
-    },
-    [addMessage]
-  );
-
-  // onCellChange is called with the row, column, and character.
-  const onCellChange = useCallback(
-    (row: number, col: number, char: string) => {
-      addMessage(`onCellChange: "${row}", "${col}", "${char}"`);
-    },
-    [addMessage]
-  );
 
   // all the same functionality, but for the decomposed CrosswordProvider
   const crosswordProvider = useRef<CrosswordProviderImperative>(null);
 
-  const focusProvider = useCallback((event) => {
-    crosswordProvider.current?.focus();
-  }, []);
-
-  const fillOneCellProvider = useCallback((event) => {
-    crosswordProvider.current?.setGuess(0, 2, "O");
-  }, []);
-
-  const fillAllAnswersProvider = useCallback((event) => {
-    crosswordProvider.current?.fillAllAnswers();
-  }, []);
-
   const resetProvider = useCallback((event) => {
     crosswordProvider.current?.reset();
   }, []);
-
-  useEffect(() => {
-    setYear((Math.floor(Math.random() * 42) + 1976).toString());
-    setMonth(("0" + (Math.floor(Math.random() * 12) + 1)).slice(-2));
-    setDay(("0" + (Math.floor(Math.random() * 31) + 1)).slice(-2));
-  }, [shuffle]);
-
-  // We don't really *do* anything with callbacks from the Crossword component,
-  // but we can at least show that they are happening.  You would want to do
-  // something more interesting than simply collecting them as messages.
-  const messagesProviderRef = useRef<HTMLPreElement>(null);
-  const [messagesProvider, setMessagesProvider] = useState<string[]>([]);
-
-  const clearMessagesProvider = useCallback((event) => {
-    setMessagesProvider([]);
-  }, []);
-
-  const addMessageProvider = useCallback((message: string) => {
-    setMessagesProvider((m) => m.concat(`${message}\n`));
-  }, []);
-
-  useEffect(() => {
-    if (!messagesProviderRef.current) {
-      return;
-    }
-    const { scrollHeight } = messagesProviderRef.current;
-    messagesProviderRef.current.scrollTo(0, scrollHeight);
-  }, [messagesProvider]);
-
-  // onCorrect is called with the direction, number, and the correct answer.
-  const onCorrectProvider = useCallback(
-    (direction, number, answer) => {
-      addMessageProvider(`onCorrect: "${direction}", "${number}", "${answer}"`);
-    },
-    [addMessageProvider]
-  );
-
-  // onLoadedCorrect is called with an array of the already-correct answers,
-  // each element itself is an array with the same values as in onCorrect: the
-  // direction, number, and the correct answer.
-  const onLoadedCorrectProvider = useCallback(
-    (answers: AnswerTuple[]) => {
-      addMessageProvider(
-        `onLoadedCorrect:\n${answers.map(([direction, number, answer]) => `    - "${direction}", "${number}", "${answer}"`).join("\n")}`
-      );
-    },
-    [addMessageProvider]
-  );
-
-  // onCrosswordCorrect is called with a truthy/falsy value.
-  const onCrosswordCorrectProvider = useCallback(
-    (isCorrect: boolean) => {
-      addMessageProvider(`onCrosswordCorrect: ${JSON.stringify(isCorrect)}`);
-    },
-    [addMessageProvider]
-  );
-
-  // onCellChange is called with the row, column, and character.
-  const onCellChangeProvider = useCallback(
-    (row: number, col: number, char: string) => {
-      addMessageProvider(`onCellChange: "${row}", "${col}", "${char}"`);
-    },
-    [addMessageProvider]
-  );
 
   return (
     <Container>
@@ -331,38 +204,20 @@ function App() {
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <ButtonGroup variant="contained" aria-label="outlined primary button group">
-            <Button variant="contained" color="primary" onClick={focusProvider}>
-              Focus
-            </Button>
-            <Button variant="contained" color="secondary" onClick={fillOneCellProvider}>
-              Fill the first letter of 2-down
-            </Button>
-            <Button variant="contained" color="success" onClick={fillAllAnswersProvider}>
-              Fill all answers
-            </Button>
             <Button variant="contained" color="warning" onClick={resetProvider}>
               Reset
             </Button>
             <Button variant="contained" color="error" onClick={() => setShuffle(shuffle + 1)}>
-              Shuffle
+              New Game
             </Button>
           </ButtonGroup>
         </Grid>
-        <br />
-        {transcript}
-        {/* <br />
-        {JSON.stringify(puzzle)} */}
-        <br />
+        <Grid item xs={12}>
+          {transcript}
+        </Grid>
         <Grid item xs={12}>
           {puzzle && (
-            <CrosswordProvider
-              ref={crosswordProvider}
-              data={puzzle}
-              onCorrect={onCorrectProvider}
-              onLoadedCorrect={onLoadedCorrectProvider}
-              onCrosswordCorrect={onCrosswordCorrectProvider}
-              onCellChange={onCellChangeProvider}
-            >
+            <CrosswordProvider ref={crosswordProvider} data={puzzle}>
               <Grid container spacing={2}>
                 <Grid item xs={3}>
                   <DirectionClues direction="across" />
