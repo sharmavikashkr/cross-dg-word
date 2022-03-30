@@ -1,32 +1,21 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { Box, Container, Grid } from "@mui/material";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { wordList } from "./constants/data";
 import Typography from "@mui/material/Typography";
+import { Container, Grid, Box } from "@mui/material";
 
+export interface WordleProps {
+  transcript: string;
+}
 interface GuessType {
   guessWord: string;
   guessStatus: string;
 }
 
-const Wordle = () => {
-  let socket: WebSocket;
-  const mic: any = {};
-  const [transcript, setTranscript] = useState("");
+export const Wordle: React.FunctionComponent<WordleProps> = ({ transcript }) => {
   const [word, setWord] = useState("");
   const [guessList, setGuessList] = useState<GuessType[]>([]);
   const [shuffle, setShuffle] = useState(0);
-
-  const wordRef = useRef(word);
-  const guessListRef = useRef(guessList);
-
-  useEffect(() => {
-    wordRef.current = word;
-  }, [word]);
-
-  useEffect(() => {
-    guessListRef.current = guessList;
-  }, [guessList]);
 
   useEffect(() => {
     const randomWord = wordList[Math.floor(Math.random() * wordList.length)];
@@ -34,89 +23,49 @@ const Wordle = () => {
   }, [shuffle]);
 
   useEffect(() => {
-    async function fetchData() {
-      mic.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      if (!MediaRecorder.isTypeSupported("audio/webm")) {
-        alert("Browser not supported");
-      }
-      mic.mediaRecorder = new MediaRecorder(mic.stream, { mimeType: "audio/webm" });
-      return mic.mediaRecorder;
+    if(transcript.trim() === "") {
+      return;
     }
-    console.log("listening..");
-    fetchData();
-    beginTranscription();
-    return () => {
-      if (socket) {
-        console.log("Closing open socket");
-        socket.close();
-      }
-    };
-  }, [word]);
-
-  async function beginTranscription() {
-    const key = await fetch("https://crosswords-dg.azurewebsites.net/api/deepgramkeyapi").then((r) => r.text());
-    if (socket) {
-      socket.close();
+    console.log("wordle transcript", transcript);
+    if (transcript.includes("NEW WORD")) {
+      setShuffle(shuffle + 1);
+    } else {
+      fillWord(transcript);
     }
-    socket = new WebSocket("wss://api.deepgram.com/v1/listen?punctuate=true&diarize=true&interim_results=true", ["token", key]);
-    socket.onopen = () => {
-      mic.mediaRecorder.addEventListener("dataavailable", (event: any) => {
-        if (event.data.size > 0 && socket.readyState === 1) socket.send(event.data);
-      });
-      mic.mediaRecorder.start(250);
-    };
-    socket.onmessage = (message) => transcriptionResults(JSON.parse(message.data));
-  }
+  }, [transcript]);
 
-  function transcriptionResults(data: any) {
-    const { is_final, channel } = data;
-    let { transcript } = channel.alternatives[0];
-    if (!transcript) return;
-
-    if (is_final) {
-      transcript = transcript.toUpperCase();
-      console.log("transcript", transcript);
-      setTranscript(transcript);
-      if (transcript.includes("NEW WORD")) {
-        setShuffle(shuffle + 1);
-      } else {
-        fillWord(transcript);
-      }
+  function fillWord(transcript: string) {
+    let commanArr = transcript.split(" ");
+    if (commanArr.length > 1) {
+      return;
     }
-
-    function fillWord(transcript: string) {
-      let commanArr = transcript.split(" ");
-      if (commanArr.length > 1) {
-        return;
-      }
-      const alreadyGuessed = guessListRef.current.filter((word) => word.guessWord === transcript);
-      if(alreadyGuessed.length > 0) {
-        return;
-      }
-      console.log("command array", commanArr);
-      const guessWord = commanArr[0].replace(",", "").replace(".", "").replace("?", "");
-      console.log("guessWord", guessWord);
-      if (wordRef.current.length !== guessWord.length) {
-        return;
-      }
-      let guessStatus = "";
-      for (let i = 0; i < guessWord.length; i++) {
-        guessStatus += getLetterStatus(guessWord[i], i);
-      }
-      const newGuessList = guessListRef.current;
-      newGuessList.push({
-        guessWord: guessWord,
-        guessStatus: guessStatus,
-      });
-      setGuessList(newGuessList);
+    const alreadyGuessed = guessList.filter((word) => word.guessWord === transcript);
+    if (alreadyGuessed.length > 0) {
+      return;
     }
+    console.log("command array", commanArr);
+    const guessWord = commanArr[0].replace(",", "").replace(".", "").replace("?", "");
+    console.log("guessWord", guessWord);
+    if (word.length !== guessWord.length) {
+      return;
+    }
+    let guessStatus = "";
+    for (let i = 0; i < guessWord.length; i++) {
+      guessStatus += getLetterStatus(guessWord[i], i);
+    }
+    const newGuessList = guessList;
+    newGuessList.push({
+      guessWord: guessWord,
+      guessStatus: guessStatus,
+    });
+    setGuessList(newGuessList);
   }
 
   function getLetterStatus(letter: string, index: number): string {
-    if (wordRef.current[index] === letter) {
+    if (word[index] === letter) {
       return "g";
     }
-    const expectedIndex = wordRef.current.indexOf(letter);
+    const expectedIndex = word.indexOf(letter);
     if (expectedIndex === -1) {
       return "b";
     } else if (index !== expectedIndex) {
@@ -133,13 +82,7 @@ const Wordle = () => {
           <h1>WORDLE</h1>
         </Grid>
         <Grid container xs={12} justifyContent="center">
-          {word}
-        </Grid>
-        <Grid container xs={12} justifyContent="center">
           {transcript}
-        </Grid>
-        <Grid container xs={12} justifyContent="center">
-          {JSON.stringify(guessList)}
         </Grid>
         <Grid key={shuffle} container xs={12} justifyContent="center">
           <Grid item xs={0} sm={2} md={3} lg={4} xl={4}></Grid>
@@ -169,7 +112,7 @@ const Wordle = () => {
                         }}
                       >
                         <Grid container justifyContent="center">
-                          <Typography variant="h4" component="div" gutterBottom>
+                          <Typography variant="h4" component="div">
                             {guessList[rowIndex]?.guessWord[letterIndex]}
                           </Typography>
                         </Grid>

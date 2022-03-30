@@ -6,11 +6,12 @@ import { Button, ButtonGroup, Container, Grid } from "@mui/material";
 import wordsToNumbers from "words-to-numbers";
 import useWindowDimensions from "./UseWindowDimentions";
 
-function CrossWords() {
+export interface CrossWordsProps {
+  transcript: string;
+}
+
+export const CrossWords: React.FunctionComponent<CrossWordsProps> = ({ transcript }) => {
   const { width } = useWindowDimensions();
-  let socket: WebSocket;
-  const mic: any = {};
-  const [transcript, setTranscript] = useState("");
   const [shuffle, setShuffle] = useState(0);
   const [year, setYear] = useState("2009");
   const [month, setMonth] = useState("03");
@@ -89,107 +90,67 @@ function CrossWords() {
   }
 
   useEffect(() => {
-    async function fetchData() {
-      mic.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      if (!MediaRecorder.isTypeSupported("audio/webm")) {
-        alert("Browser not supported");
-      }
-      mic.mediaRecorder = new MediaRecorder(mic.stream, { mimeType: "audio/webm" });
-      return mic.mediaRecorder;
+    if (transcript.trim() === "") {
+      return;
     }
-    console.log("listening..");
-    fetchData();
-    beginTranscription();
-    return () => {
-      if (socket) {
-        console.log("Closing open socket");
-        socket.close();
-      }
-    };
-  }, [puzzle]);
-
-  async function beginTranscription() {
-    const key = await fetch("https://crosswords-dg.azurewebsites.net/api/deepgramkeyapi").then((r) => r.text());
-    if (socket) {
-      socket.close();
+    console.log("crosswords transcript", transcript);
+    if (transcript.includes("ACROSS")) {
+      fillWord(transcript, "ACROSS");
+    } else if (transcript.includes("DOWN")) {
+      fillWord(transcript, "DOWN");
+    } else if (transcript.includes("RESET")) {
+      crosswordProvider.current?.reset();
+    } else if (transcript.includes("NEW GAME")) {
+      crosswordProvider.current?.reset();
+      setShuffle(shuffle + 1);
+    } else if (transcript.includes("VALIDATE")) {
+      const isCorrect = crosswordProvider.current?.isCrosswordCorrect();
+      console.log("isCorrect", isCorrect);
     }
-    socket = new WebSocket("wss://api.deepgram.com/v1/listen?punctuate=true&diarize=true&interim_results=true", ["token", key]);
-    socket.onopen = () => {
-      mic.mediaRecorder.addEventListener("dataavailable", (event: any) => {
-        if (event.data.size > 0 && socket.readyState === 1) socket.send(event.data);
-      });
-      mic.mediaRecorder.start(250);
-    };
-    socket.onmessage = (message) => transcriptionResults(JSON.parse(message.data));
-  }
+  }, [transcript]);
 
-  function transcriptionResults(data: any) {
-    const { is_final, channel } = data;
-    let { transcript } = channel.alternatives[0];
-    if (!transcript) return;
-
-    if (is_final) {
-      transcript = transcript.toUpperCase();
-      console.log("transcript", transcript);
-      setTranscript(transcript);
-      if (transcript.includes("ACROSS")) {
-        fillWord(transcript, "ACROSS");
-      } else if (transcript.includes("DOWN")) {
-        fillWord(transcript, "DOWN");
-      } else if (transcript.includes("RESET")) {
-        crosswordProvider.current?.reset();
-      } else if (transcript.includes("NEW GAME")) {
-        crosswordProvider.current?.reset();
-        setShuffle(shuffle + 1);
-      } else if (transcript.includes("VALIDATE")) {
-        const isCorrect = crosswordProvider.current?.isCrosswordCorrect();
-        console.log("isCorrect", isCorrect);
-      }
+  function fillWord(transcript: string, direction: string) {
+    let commanArr = transcript.split(direction);
+    if (commanArr.length < 2) {
+      return;
     }
+    console.log("command array", commanArr);
 
-    function fillWord(transcript: string, direction: string) {
-      let commanArr = transcript.split(direction);
-      if (commanArr.length < 2) {
+    let boxnum = wordsToNumbers(commanArr[0]);
+    if (typeof boxnum === "string") {
+      boxnum = parseInt(boxnum);
+    }
+    if (typeof boxnum !== "number") {
+      return;
+    }
+    console.log("box number", boxnum);
+
+    const guess = commanArr[1].replaceAll(" ", "").replace(",", "").replace(".", "");
+    console.log("guess", guess);
+    if (direction === "ACROSS") {
+      console.log("hint", puzzle.across);
+      const answer = puzzle.across[boxnum].answer;
+      console.log("answer", answer);
+      if (answer.length !== guess.length) {
         return;
       }
-      console.log("command array", commanArr);
-
-      let boxnum = wordsToNumbers(commanArr[0]);
-      if (typeof boxnum === "string") {
-        boxnum = parseInt(boxnum);
+      const posR = puzzle.across[boxnum].row;
+      const posC = puzzle.across[boxnum].col;
+      for (let i = 0; i < guess.length; i++) {
+        const c = guess.charAt(i);
+        crosswordProvider.current?.setGuess(posR, posC + i, c);
       }
-      if (typeof boxnum !== "number") {
+    } else if (direction === "DOWN") {
+      const answer = puzzle.down[boxnum].answer;
+      console.log("answer", answer);
+      if (answer.length !== guess.length) {
         return;
       }
-      console.log("box number", boxnum);
-
-      const guess = commanArr[1].replaceAll(" ", "").replace(",", "").replace(".", "");
-      console.log("guess", guess);
-      if (direction === "ACROSS") {
-        console.log("hint", puzzle.across);
-        const answer = puzzle.across[boxnum].answer;
-        console.log("answer", answer);
-        if (answer.length !== guess.length) {
-          return;
-        }
-        const posR = puzzle.across[boxnum].row;
-        const posC = puzzle.across[boxnum].col;
-        for (let i = 0; i < guess.length; i++) {
-          const c = guess.charAt(i);
-          crosswordProvider.current?.setGuess(posR, posC + i, c);
-        }
-      } else if (direction === "DOWN") {
-        const answer = puzzle.down[boxnum].answer;
-        console.log("answer", answer);
-        if (answer.length !== guess.length) {
-          return;
-        }
-        const posR = puzzle.down[boxnum].row;
-        const posC = puzzle.down[boxnum].col;
-        for (let i = 0; i < guess.length; i++) {
-          const c = guess.charAt(i);
-          crosswordProvider.current?.setGuess(posR + i, posC, c);
-        }
+      const posR = puzzle.down[boxnum].row;
+      const posC = puzzle.down[boxnum].col;
+      for (let i = 0; i < guess.length; i++) {
+        const c = guess.charAt(i);
+        crosswordProvider.current?.setGuess(posR + i, posC, c);
       }
     }
   }
@@ -253,6 +214,6 @@ function CrossWords() {
       </Grid>
     </Container>
   );
-}
+};
 
 export default CrossWords;
