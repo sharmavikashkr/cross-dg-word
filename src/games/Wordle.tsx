@@ -1,27 +1,20 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect } from "react";
-import { wordList } from "./constants/data";
+import React, { useEffect } from "react";
 import Typography from "@mui/material/Typography";
 import { Container, Grid, Box } from "@mui/material";
-
-interface GuessType {
-  guessWord: string;
-  guessStatus: string;
-}
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../store/utils";
+import { addWordleGuess } from "../store";
 
 export interface WordleProps {
   transcript: string;
 }
 
 export const Wordle: React.FunctionComponent<WordleProps> = ({ transcript }) => {
-  const [word, setWord] = useState("");
-  const [guessList, setGuessList] = useState<GuessType[]>([]);
+  const dispatch = useDispatch();
 
-  useEffect(() => {
-    const randomWord = wordList[Math.floor(Math.random() * wordList.length)];
-    setWord(randomWord.toUpperCase());
-    setGuessList([]);
-  }, []);
+  const word = useSelector((state: RootState) => state.wordleState.word);
+  const guessList = useSelector((state: RootState) => state.wordleState.guessList);
 
   useEffect(() => {
     function fillWord(transcript: string) {
@@ -43,12 +36,12 @@ export const Wordle: React.FunctionComponent<WordleProps> = ({ transcript }) => 
       for (let i = 0; i < guessWord.length; i++) {
         guessStatus += getLetterStatus(guessWord[i], i);
       }
-      const newGuessList = guessList;
-      newGuessList.push({
-        guessWord: guessWord,
-        guessStatus: guessStatus,
-      });
-      setGuessList((prevGuessList) => [...prevGuessList, ...newGuessList]);
+      dispatch(
+        addWordleGuess({
+          guessWord: guessWord,
+          guessStatus: guessStatus,
+        })
+      );
     }
 
     function getLetterStatus(letter: string, index: number): string {
@@ -75,16 +68,16 @@ export const Wordle: React.FunctionComponent<WordleProps> = ({ transcript }) => 
     <Container key={"wordle-game-container"}>
       <br />
       <Grid container spacing={2}>
-        <Grid container justifyContent="center">
+        <Grid container spacing={2} justifyContent="center">
           <h1>WORDLE</h1>
         </Grid>
-        <Grid container justifyContent="center">
+        {/* <Grid container justifyContent="center">
           {word}
-        </Grid>
-        <Grid container justifyContent="center">
+        </Grid> */}
+        {/* <Grid container justifyContent="center">
           {JSON.stringify(guessList)}
-        </Grid>
-        <Grid container justifyContent="center">
+        </Grid> */}
+        <Grid container spacing={2} justifyContent="center">
           {transcript}
         </Grid>
         <br />
@@ -103,15 +96,15 @@ export const Wordle: React.FunctionComponent<WordleProps> = ({ transcript }) => 
                           height: 50,
                           backgroundColor:
                             guessList[rowIndex]?.guessStatus[letterIndex] === "g"
-                              ? "green"
+                              ? "#6AAA64"
                               : guessList[rowIndex]?.guessStatus[letterIndex] === "y"
-                              ? "yellow"
+                              ? "#C9B458"
                               : guessList[rowIndex]?.guessStatus[letterIndex] === "b"
-                              ? "gray"
+                              ? "#787C7E"
                               : "white",
-                          border: "2px solid grey",
+                          border: "2px solid #D3d6DA",
                           "&:hover": {
-                            backgroundColor: "grey",
+                            backgroundColor: "#D3d6DA",
                             opacity: [0.9, 0.8, 0.7],
                           },
                         }}

@@ -1,9 +1,11 @@
-import CrossWords from "./games/CrossWords";
 import Wordle from "./games/Wordle";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import { ReactNode, SyntheticEvent, useEffect, useState } from "react";
 import { Box } from "@mui/material";
+import { useDispatch } from "react-redux";
+import { loadCrosswordsPuzzle, loadWordleWord } from "./store";
+import Crosswords from "./games/Crosswords";
 
 interface TabPanelProps {
   children?: ReactNode;
@@ -22,17 +24,27 @@ function TabPanel(props: TabPanelProps) {
 }
 
 export default function App() {
-  const [value, setValue] = useState(0);
+  const dispatch = useDispatch();
   let socket: WebSocket;
   const mic: any = {};
-  const [transcript, setTranscript] = useState("");
 
-  const crosswordsGame = <CrossWords transcript={transcript} />;
-  const wordleGame = <Wordle transcript={transcript} />;
+  const [value, setValue] = useState(0);
+  const [transcript, setTranscript] = useState("");
 
   const handleChange = (event: SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
+
+  useEffect(() => {
+    dispatch(loadCrosswordsPuzzle());
+    dispatch(loadWordleWord());
+    // return () => {
+    //   if(socket) {
+    //     console.log("closing socket");
+    //     socket.close();
+    //   }
+    // }
+  });
 
   useEffect(() => {
     async function fetchData() {
@@ -81,21 +93,21 @@ export default function App() {
         socket.close();
       }
     };
-  }, []);
+  });
 
   return (
     <div>
       <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
         <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
-          <Tab label="CrossWords" />
+          <Tab label="Crosswords" />
           <Tab label="Wordle" />
         </Tabs>
       </Box>
       <TabPanel value={value} index={0}>
-        {crosswordsGame}
+        <Crosswords transcript={transcript} />
       </TabPanel>
       <TabPanel value={value} index={1}>
-        {wordleGame}
+        <Wordle transcript={transcript} />
       </TabPanel>
     </div>
   );

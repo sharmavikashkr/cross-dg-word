@@ -1,91 +1,28 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { CrosswordGrid, CrosswordProvider, CrosswordProviderImperative, DirectionClues, CluesInput } from "@jaredreisinger/react-crossword";
-import axios from "axios";
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import { CrosswordGrid, CrosswordProvider, CrosswordProviderImperative, DirectionClues } from "@jaredreisinger/react-crossword";
 import { Button, ButtonGroup, Container, Grid } from "@mui/material";
 import wordsToNumbers from "words-to-numbers";
 import useWindowDimensions from "../UseWindowDimentions";
+import { RootState } from "../store/utils";
+import { useSelector } from "react-redux";
 
-export interface CrossWordsProps {
+export interface CrosswordsProps {
   transcript: string;
 }
 
-export const CrossWords: React.FunctionComponent<CrossWordsProps> = ({ transcript }) => {
+export const Crosswords: React.FunctionComponent<CrosswordsProps> = ({ transcript }) => {
   const { width } = useWindowDimensions();
-  const [date, setDate] = useState("2009/03/18");
-  const [puzzle, setPuzzle] = useState<CluesInput>({
-    across: {
-      1: {
-        clue: "one plus one",
-        answer: "TWO",
-        row: 0,
-        col: 0,
-      },
-    },
-    down: {
-      2: {
-        clue: "three minus two",
-        answer: "ONE",
-        row: 0,
-        col: 2,
-      },
-    },
-  });
+
+  const date = useSelector((state: RootState) => state.crosswordsState.date);
+  const puzzle = useSelector((state: RootState) => state.crosswordsState.puzzle);
+  const error = useSelector((state: RootState) => state.crosswordsState.error);
 
   useEffect(() => {
-    const year = (Math.floor(Math.random() * 42) + 1976).toString();
-    const month = ("0" + (Math.floor(Math.random() * 12) + 1)).slice(-2);
-    const day = ("0" + (Math.floor(Math.random() * 31) + 1)).slice(-2);
-    setDate(year + "/" + month + "/" + day);
-  }, []);
+    crosswordProvider.current?.reset();
+  }, [puzzle]);
 
-  useEffect(() => {
-    function formatPuzzle(puzzleData: any) {
-      const rowSize = parseInt(puzzleData?.size?.rows);
-      const colSize = parseInt(puzzleData?.size?.cols);
-      const newPuzzle: CluesInput = { across: {}, down: {} };
-      puzzleData?.clues?.across?.forEach((hint: string, index: number) => {
-        const boxnum = parseInt(hint.substring(0, hint.indexOf(".")));
-        const clue = hint.substring(hint.indexOf(".") + 2);
-        const position = puzzleData?.gridnums?.indexOf(boxnum);
-        const row = Math.floor(position / rowSize);
-        const col = position % colSize;
-        newPuzzle.across[boxnum] = {
-          clue: clue,
-          answer: puzzleData?.answers?.across[index],
-          row: row,
-          col: col,
-        };
-      });
-      puzzleData?.clues?.down?.forEach((hint: string, index: number) => {
-        const boxnum = parseInt(hint.substring(0, hint.indexOf(".")));
-        const clue = hint.substring(hint.indexOf(".") + 2);
-        const position = puzzleData?.gridnums?.indexOf(boxnum);
-        const row = Math.floor(position / rowSize);
-        const col = position % colSize;
-        newPuzzle.down[boxnum] = {
-          clue: clue,
-          answer: puzzleData?.answers?.down[index],
-          row: row,
-          col: col,
-        };
-      });
-      setPuzzle(newPuzzle);
-      crosswordProvider.current?.reset();
-    }
-
-    const crosswords_url = "https://raw.githubusercontent.com/doshea/nyt_crosswords/master/" + date + ".json";
-    axios
-      .get(crosswords_url)
-      .then((response) => {
-        console.log("formatting puzzle");
-        formatPuzzle(response.data);
-      })
-      .catch((ex: any) => {
-        console.error(ex);
-      });
-  }, [date]);
-
-  useEffect(() => {
+  useMemo(() => {
     function fillWord(transcript: string, direction: string) {
       let commanArr = transcript.split(direction);
       if (commanArr.length < 2) {
@@ -146,7 +83,7 @@ export const CrossWords: React.FunctionComponent<CrossWordsProps> = ({ transcrip
       const isCorrect = crosswordProvider.current?.isCrosswordCorrect();
       console.log("isCorrect", isCorrect);
     }
-  }, [transcript, puzzle.down, puzzle.across]);
+  }, [transcript]);
 
   const crosswordProvider = useRef<CrosswordProviderImperative>(null);
 
@@ -158,6 +95,9 @@ export const CrossWords: React.FunctionComponent<CrossWordsProps> = ({ transcrip
     <Container key={"crosswords-game-container"}>
       <br />
       <Grid container spacing={2} justifyContent="center">
+        <Grid item xs={12}>
+          {error}
+        </Grid>
         <Grid item xs={12}>
           <ButtonGroup variant="contained" aria-label="outlined primary button group">
             <Button variant="contained" color="warning" onClick={resetProvider}>
@@ -208,4 +148,4 @@ export const CrossWords: React.FunctionComponent<CrossWordsProps> = ({ transcrip
   );
 };
 
-export default CrossWords;
+export default Crosswords;
