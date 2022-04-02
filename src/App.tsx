@@ -1,11 +1,9 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import CrossWords from "./games/CrossWords";
 import Wordle from "./games/Wordle";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
-import Typography from "@mui/material/Typography";
-import Box from "@mui/material/Box";
 import { ReactNode, SyntheticEvent, useEffect, useState } from "react";
+import { Box } from "@mui/material";
 
 interface TabPanelProps {
   children?: ReactNode;
@@ -14,15 +12,11 @@ interface TabPanelProps {
 }
 
 function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
+  const { children, value, index } = props;
 
   return (
-    <div role="tabpanel" hidden={value !== index} id={`simple-tabpanel-${index}`} aria-labelledby={`simple-tab-${index}`} {...other}>
-      {value === index && (
-        <Box sx={{ p: 3 }}>
-          <Typography>{children}</Typography>
-        </Box>
-      )}
+    <div role="tabpanel" hidden={value !== index}>
+      {value === index && children}
     </div>
   );
 }
@@ -32,6 +26,9 @@ export default function App() {
   let socket: WebSocket;
   const mic: any = {};
   const [transcript, setTranscript] = useState("");
+
+  const crosswordsGame = <CrossWords transcript={transcript} />;
+  const wordleGame = <Wordle transcript={transcript} />;
 
   const handleChange = (event: SyntheticEvent, newValue: number) => {
     setValue(newValue);
@@ -46,9 +43,38 @@ export default function App() {
       mic.mediaRecorder = new MediaRecorder(mic.stream, { mimeType: "audio/webm" });
       return mic.mediaRecorder;
     }
+
+    async function beginTranscription() {
+      const key = await fetch("https://crosswords-dg.azurewebsites.net/api/deepgramkeyapi").then((r) => r.text());
+      if (socket) {
+        socket.close();
+      }
+      socket = new WebSocket("wss://api.deepgram.com/v1/listen?punctuate=true&diarize=true&interim_results=true", ["token", key]);
+      socket.onopen = () => {
+        mic.mediaRecorder.addEventListener("dataavailable", (event: any) => {
+          if (event.data.size > 0 && socket.readyState === 1) socket.send(event.data);
+        });
+        mic.mediaRecorder.start(250);
+      };
+      socket.onmessage = (message) => transcriptionResults(JSON.parse(message.data));
+    }
+
+    function transcriptionResults(data: any) {
+      const { is_final, channel } = data;
+      let { transcript } = channel.alternatives[0];
+      if (!transcript) return;
+
+      if (is_final) {
+        transcript = transcript.toUpperCase();
+        console.log("transcript", transcript);
+        setTranscript(transcript);
+      }
+    }
+
     console.log("listening..");
     fetchData();
     beginTranscription();
+
     return () => {
       if (socket) {
         console.log("Closing open socket");
@@ -56,33 +82,6 @@ export default function App() {
       }
     };
   }, []);
-
-  async function beginTranscription() {
-    const key = await fetch("https://crosswords-dg.azurewebsites.net/api/deepgramkeyapi").then((r) => r.text());
-    if (socket) {
-      socket.close();
-    }
-    socket = new WebSocket("wss://api.deepgram.com/v1/listen?punctuate=true&diarize=true&interim_results=true", ["token", key]);
-    socket.onopen = () => {
-      mic.mediaRecorder.addEventListener("dataavailable", (event: any) => {
-        if (event.data.size > 0 && socket.readyState === 1) socket.send(event.data);
-      });
-      mic.mediaRecorder.start(250);
-    };
-    socket.onmessage = (message) => transcriptionResults(JSON.parse(message.data));
-  }
-
-  function transcriptionResults(data: any) {
-    const { is_final, channel } = data;
-    let { transcript } = channel.alternatives[0];
-    if (!transcript) return;
-
-    if (is_final) {
-      transcript = transcript.toUpperCase();
-      console.log("transcript", transcript);
-      setTranscript(transcript);
-    }
-  }
 
   return (
     <div>
@@ -93,10 +92,10 @@ export default function App() {
         </Tabs>
       </Box>
       <TabPanel value={value} index={0}>
-        <CrossWords key={value} transcript={transcript} />
+        {crosswordsGame}
       </TabPanel>
       <TabPanel value={value} index={1}>
-        <Wordle key={value} transcript={transcript} />
+        {wordleGame}
       </TabPanel>
     </div>
   );

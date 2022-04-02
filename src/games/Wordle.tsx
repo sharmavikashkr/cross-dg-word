@@ -4,94 +4,99 @@ import { wordList } from "./constants/data";
 import Typography from "@mui/material/Typography";
 import { Container, Grid, Box } from "@mui/material";
 
-export interface WordleProps {
-  transcript: string;
-}
 interface GuessType {
   guessWord: string;
   guessStatus: string;
 }
 
+export interface WordleProps {
+  transcript: string;
+}
+
 export const Wordle: React.FunctionComponent<WordleProps> = ({ transcript }) => {
   const [word, setWord] = useState("");
   const [guessList, setGuessList] = useState<GuessType[]>([]);
-  const [shuffle, setShuffle] = useState(0);
 
   useEffect(() => {
     const randomWord = wordList[Math.floor(Math.random() * wordList.length)];
     setWord(randomWord.toUpperCase());
-  }, [shuffle]);
+    setGuessList([]);
+  }, []);
 
   useEffect(() => {
-    if(transcript.trim() === "") {
+    function fillWord(transcript: string) {
+      let commanArr = transcript.split(" ");
+      if (commanArr.length > 1) {
+        return;
+      }
+      const alreadyGuessed = guessList.filter((word) => word.guessWord === transcript);
+      if (alreadyGuessed.length > 0) {
+        return;
+      }
+      console.log("command array", commanArr);
+      const guessWord = commanArr[0].replace(",", "").replace(".", "").replace("?", "");
+      console.log("guessWord", guessWord);
+      if (word.length !== guessWord.length) {
+        return;
+      }
+      let guessStatus = "";
+      for (let i = 0; i < guessWord.length; i++) {
+        guessStatus += getLetterStatus(guessWord[i], i);
+      }
+      const newGuessList = guessList;
+      newGuessList.push({
+        guessWord: guessWord,
+        guessStatus: guessStatus,
+      });
+      setGuessList((prevGuessList) => [...prevGuessList, ...newGuessList]);
+    }
+
+    function getLetterStatus(letter: string, index: number): string {
+      if (word[index] === letter) {
+        return "g";
+      }
+      const expectedIndex = word.indexOf(letter);
+      if (expectedIndex === -1) {
+        return "b";
+      } else if (index !== expectedIndex) {
+        return "y";
+      }
+      return "g";
+    }
+
+    if (transcript.trim() === "") {
       return;
     }
     console.log("wordle transcript", transcript);
-    if (transcript.includes("NEW WORD")) {
-      setShuffle(shuffle + 1);
-    } else {
-      fillWord(transcript);
-    }
+    fillWord(transcript);
   }, [transcript]);
 
-  function fillWord(transcript: string) {
-    let commanArr = transcript.split(" ");
-    if (commanArr.length > 1) {
-      return;
-    }
-    const alreadyGuessed = guessList.filter((word) => word.guessWord === transcript);
-    if (alreadyGuessed.length > 0) {
-      return;
-    }
-    console.log("command array", commanArr);
-    const guessWord = commanArr[0].replace(",", "").replace(".", "").replace("?", "");
-    console.log("guessWord", guessWord);
-    if (word.length !== guessWord.length) {
-      return;
-    }
-    let guessStatus = "";
-    for (let i = 0; i < guessWord.length; i++) {
-      guessStatus += getLetterStatus(guessWord[i], i);
-    }
-    const newGuessList = guessList;
-    newGuessList.push({
-      guessWord: guessWord,
-      guessStatus: guessStatus,
-    });
-    setGuessList(newGuessList);
-  }
-
-  function getLetterStatus(letter: string, index: number): string {
-    if (word[index] === letter) {
-      return "g";
-    }
-    const expectedIndex = word.indexOf(letter);
-    if (expectedIndex === -1) {
-      return "b";
-    } else if (index !== expectedIndex) {
-      return "y";
-    }
-    return "g";
-  }
-
   return (
-    <Container key={shuffle}>
+    <Container key={"wordle-game-container"}>
       <br />
-      <Grid container spacing={2} justifyContent="center">
-        <Grid container xs={12} justifyContent="center">
+      <Grid container spacing={2}>
+        <Grid container justifyContent="center">
           <h1>WORDLE</h1>
         </Grid>
-        <Grid container xs={12} justifyContent="center">
+        <Grid container justifyContent="center">
+          {word}
+        </Grid>
+        <Grid container justifyContent="center">
+          {JSON.stringify(guessList)}
+        </Grid>
+        <Grid container justifyContent="center">
           {transcript}
         </Grid>
-        <Grid key={shuffle} container xs={12} justifyContent="center">
+        <br />
+        <Grid container justifyContent="center">
           <Grid item xs={0} sm={2} md={3} lg={4} xl={4}></Grid>
           <Grid item xs={12} sm={8} md={6} lg={4} xl={4}>
+            <Grid item xs={1}></Grid>
             {[0, 1, 2, 3, 4, 5].map((row, rowIndex) => (
-              <div>
-                <Grid key={rowIndex} container justifyContent="center">
+              <div key={rowIndex}>
+                <Grid container justifyContent="center">
                   {[0, 1, 2, 3, 4].map((column, letterIndex) => (
-                    <Grid key={guessList[rowIndex]?.guessWord[letterIndex]} item xs={2}>
+                    <Grid key={rowIndex + "-" + letterIndex} item xs={2}>
                       <Box
                         sx={{
                           width: 50,
@@ -123,6 +128,7 @@ export const Wordle: React.FunctionComponent<WordleProps> = ({ transcript }) => 
                 <br />
               </div>
             ))}
+            <Grid item xs={1}></Grid>
           </Grid>
           <Grid item xs={0} sm={2} md={3} lg={4} xl={4}></Grid>
         </Grid>
