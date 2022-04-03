@@ -15,6 +15,6 @@ export function* loadCrosswordsPuzzle() {
     console.log("newPuzzle", newPuzzle);
     yield put(setCrosswordsPuzzle(date, newPuzzle));
   } catch (ex) {
-    yield put(setCrosswordsError("Something went wrong"));
+    yield put(setCrosswordsError("Something went wrong, please reload."));
   }
 }

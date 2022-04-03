@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect } from "react";
 import Typography from "@mui/material/Typography";
-import { Container, Grid, Box } from "@mui/material";
+import { Container, Grid, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../store/utils";
 import { addWordleGuess } from "../store";
@@ -15,6 +15,16 @@ export const Wordle: React.FunctionComponent<WordleProps> = ({ transcript }) => 
 
   const word = useSelector((state: RootState) => state.wordleState.word);
   const guessList = useSelector((state: RootState) => state.wordleState.guessList);
+  
+  const [open, setOpen] = React.useState(false);
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
 
   useEffect(() => {
     function fillWord(transcript: string) {
@@ -42,6 +52,9 @@ export const Wordle: React.FunctionComponent<WordleProps> = ({ transcript }) => 
           guessStatus: guessStatus,
         })
       );
+      if (guessList.length >= 5 || guessStatus === "ggggg") {
+        handleClickOpen();
+      }
     }
 
     function getLetterStatus(letter: string, index: number): string {
@@ -94,6 +107,14 @@ export const Wordle: React.FunctionComponent<WordleProps> = ({ transcript }) => 
                         sx={{
                           width: 50,
                           height: 50,
+                          color:
+                            guessList[rowIndex]?.guessStatus[letterIndex] === "g"
+                              ? "white"
+                              : guessList[rowIndex]?.guessStatus[letterIndex] === "y"
+                              ? "white"
+                              : guessList[rowIndex]?.guessStatus[letterIndex] === "b"
+                              ? "white"
+                              : "black",
                           backgroundColor:
                             guessList[rowIndex]?.guessStatus[letterIndex] === "g"
                               ? "#6AAA64"
@@ -126,6 +147,20 @@ export const Wordle: React.FunctionComponent<WordleProps> = ({ transcript }) => 
           <Grid item xs={0} sm={2} md={3} lg={4} xl={4}></Grid>
         </Grid>
       </Grid>
+      <Dialog open={open} onClose={handleClose} aria-labelledby="alert-dialog-title" aria-describedby="alert-dialog-description">
+        <DialogTitle id="alert-dialog-title">{"Use Google's location service?"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Let Google help apps determine location. This means sending anonymous location data to Google, even when no apps are running.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose}>Disagree</Button>
+          <Button onClick={handleClose} autoFocus>
+            Agree
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };

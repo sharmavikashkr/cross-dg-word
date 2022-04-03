@@ -106,7 +106,7 @@ export const Crosswords: React.FunctionComponent<CrosswordsProps> = ({ transcrip
               <Grid item xs={3}>
                 <List dense={true}>
                   <ListItem>
-                    <ListItemText primary={"ACROSS"} />
+                    <b>{"ACROSS"}</b>
                   </ListItem>
                   {Object.keys(puzzle.across).map((val, index) => (
                     <ListItem sx={{ width: "100%", bgcolor: "background.paper" }}>
@@ -161,7 +161,7 @@ export const Crosswords: React.FunctionComponent<CrosswordsProps> = ({ transcrip
               <Grid item xs={3}>
                 <List dense={true}>
                   <ListItem>
-                    <ListItemText primary={"DOWN"} />
+                    <b>{"DOWN"}</b>
                   </ListItem>
                   {Object.keys(puzzle.down).map((val, index) => (
                     <ListItem>
@@ -182,7 +182,7 @@ export const Crosswords: React.FunctionComponent<CrosswordsProps> = ({ transcrip
                         <Grid key={rowIndex + "-" + colIndex} item>
                           <Box
                             sx={{
-                              width: width < 700 ? 25 : 35,
+                              width: width < 700 ? 22 : 35,
                               height: width < 700 ? 35 : 35,
                               backgroundColor: puzzle.grid[rowIndex * puzzle.rows + colIndex] === "." ? "black" : "white",
                               border: "0.5px solid grey",
@@ -227,7 +227,7 @@ export const Crosswords: React.FunctionComponent<CrosswordsProps> = ({ transcrip
               <Grid item xs={6}>
                 <List dense={true}>
                   <ListItem>
-                    <ListItemText primary={"ACROSS"} />
+                    <b>{"ACROSS"}</b>
                   </ListItem>
                   {Object.keys(puzzle.across).map((val, index) => (
                     <ListItem>
@@ -239,7 +239,7 @@ export const Crosswords: React.FunctionComponent<CrosswordsProps> = ({ transcrip
               <Grid item xs={6}>
                 <List dense={true}>
                   <ListItem>
-                    <ListItemText primary={"DOWN"} />
+                    <b>{"DOWN"}</b>
                   </ListItem>
                   {Object.keys(puzzle.down).map((val, index) => (
                     <ListItem>
