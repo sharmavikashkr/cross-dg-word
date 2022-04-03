@@ -1,5 +1,5 @@
-import { CluesInput } from "@jaredreisinger/react-crossword";
 import { call, put, take } from "@redux-saga/core/effects";
+import { CrosswordsPuzzleType } from "../../interfaces/crosswordsPuzzleType";
 import { getPuzzleData } from "../../services/crosswords.service";
 import { LOAD_CROSSWORDS_PUZZLE, setCrosswordsError, setCrosswordsPuzzle } from "../actions";
 
@@ -11,8 +11,7 @@ export function* loadCrosswordsPuzzle() {
     const day = ("0" + (Math.floor(Math.random() * 31) + 1)).slice(-2);
     const date = year + "/" + month + "/" + day;
     console.log("date", date);
-    const crosswords_url = "https://raw.githubusercontent.com/doshea/nyt_crosswords/master/" + date + ".json";
-    const newPuzzle: CluesInput = yield call(getPuzzleData, crosswords_url);
+    const newPuzzle: CrosswordsPuzzleType = yield call(getPuzzleData, date);
     console.log("newPuzzle", newPuzzle);
     yield put(setCrosswordsPuzzle(date, newPuzzle));
   } catch (ex) {

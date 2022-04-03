@@ -1,9 +1,9 @@
-import { GuessType } from "../../interfaces/guessType";
+import { WordleGuessType } from "../../interfaces/wordleGuessType";
 import { WordleActionTypes, SET_WORDLE_WORD, ADD_WORDLE_GUESS } from "../actions";
 
 export interface WordleState {
   word: string;
-  guessList: GuessType[];
+  guessList: WordleGuessType[];
 }
 
 export const defaultWordleState = { word: "", guessList: [] };

@@ -1,4 +1,4 @@
-export interface GuessType {
+export interface WordleGuessType {
   guessWord: string;
   guessStatus: string;
 }

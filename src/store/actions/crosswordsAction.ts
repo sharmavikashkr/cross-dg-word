@@ -1,4 +1,4 @@
-import { CluesInput } from "@jaredreisinger/react-crossword";
+import { CrosswordsPuzzleType } from "../../interfaces/crosswordsPuzzleType";
 import { CrosswordsActionTypes, LOAD_CROSSWORDS_PUZZLE, SET_CROSSWORDS_ERROR, SET_CROSSWORDS_PUZZLE } from "./crosswordsActionTypes";
 
 export function loadCrosswordsPuzzle(): CrosswordsActionTypes {
@@ -7,7 +7,7 @@ export function loadCrosswordsPuzzle(): CrosswordsActionTypes {
   };
 }
 
-export function setCrosswordsPuzzle(date: string, puzzle: CluesInput): CrosswordsActionTypes {
+export function setCrosswordsPuzzle(date: string, puzzle: CrosswordsPuzzleType): CrosswordsActionTypes {
   return {
     type: SET_CROSSWORDS_PUZZLE,
     date: date,

@@ -1,4 +1,4 @@
-import { GuessType } from "../../interfaces/guessType";
+import { WordleGuessType } from "../../interfaces/wordleGuessType";
 
 export const LOAD_WORDLE_WORD = "LOAD_WORDLE_WORD";
 export const SET_WORDLE_WORD = "SET_WORDLE_WORD";
@@ -15,7 +15,7 @@ export interface SetWordleWordAction {
 
 export interface AddWordleGuessAction {
   type: typeof ADD_WORDLE_GUESS;
-  guess: GuessType;
+  guess: WordleGuessType;
 }
 
 export type WordleActionTypes = LoadWordleWordAction | SetWordleWordAction | AddWordleGuessAction;

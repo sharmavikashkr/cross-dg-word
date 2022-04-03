@@ -62,13 +62,13 @@ export const Wordle: React.FunctionComponent<WordleProps> = ({ transcript }) => 
     }
     console.log("wordle transcript", transcript);
     fillWord(transcript);
-  }, [transcript]);
+  }, [transcript, word]);
 
   return (
     <Container key={"wordle-game-container"}>
       <br />
-      <Grid container spacing={2}>
-        <Grid container spacing={2} justifyContent="center">
+      <Grid container spacing={0}>
+        <Grid container spacing={0} justifyContent="center">
           <h1>WORDLE</h1>
         </Grid>
         {/* <Grid container justifyContent="center">
@@ -77,11 +77,11 @@ export const Wordle: React.FunctionComponent<WordleProps> = ({ transcript }) => 
         {/* <Grid container justifyContent="center">
           {JSON.stringify(guessList)}
         </Grid> */}
-        <Grid container spacing={2} justifyContent="center">
+        <Grid container spacing={0} justifyContent="center">
           {transcript}
         </Grid>
         <br />
-        <Grid container justifyContent="center">
+        <Grid container spacing={0} justifyContent="center">
           <Grid item xs={0} sm={2} md={3} lg={4} xl={4}></Grid>
           <Grid item xs={12} sm={8} md={6} lg={4} xl={4}>
             <Grid item xs={1}></Grid>

@@ -1,4 +1,4 @@
-import { CluesInput } from "@jaredreisinger/react-crossword";
+import { CrosswordsPuzzleType } from "../../interfaces/crosswordsPuzzleType";
 
 export const LOAD_CROSSWORDS_PUZZLE = "LOAD_CROSSWORD_PUZZLE";
 export const SET_CROSSWORDS_PUZZLE = "SET_CROSSWORD_PUZZLE";
@@ -11,7 +11,7 @@ export interface LoadCrosswordsPuzzleAction {
 export interface SetCrosswordsPuzzleAction {
   type: typeof SET_CROSSWORDS_PUZZLE;
   date: string;
-  puzzle: CluesInput;
+  puzzle: CrosswordsPuzzleType;
 }
 
 export interface SetCrosswordsErrorAction {

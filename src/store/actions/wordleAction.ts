@@ -1,4 +1,4 @@
-import { GuessType } from "../../interfaces/guessType";
+import { WordleGuessType } from "../../interfaces/wordleGuessType";
 import {
   WordleActionTypes,
   LOAD_WORDLE_WORD,
@@ -19,7 +19,7 @@ export function setWordleWord(word: string): WordleActionTypes {
   };
 }
 
-export function addWordleGuess(guess: GuessType): WordleActionTypes {
+export function addWordleGuess(guess: WordleGuessType): WordleActionTypes {
   return {
     type: ADD_WORDLE_GUESS,
     guess: guess,

@@ -1,21 +1,28 @@
-import { CluesInput } from "@jaredreisinger/react-crossword";
+import { CrosswordsPuzzleType } from "../../interfaces/crosswordsPuzzleType";
 import { CrosswordsActionTypes, SET_CROSSWORDS_ERROR, SET_CROSSWORDS_PUZZLE } from "../actions";
 
 export interface CrosswordsState {
   date: string;
-  puzzle: CluesInput;
+  puzzle: CrosswordsPuzzleType;
   error: string;
 }
 
 export const defaultCrosswordsState = {
   date: "",
   puzzle: {
+    title: "",
+    rows: 3,
+    columns: 3,
+    grid: ["T", "W", ".", ".", ".", "N", ".", ".", "E"],
+    gridnums: [1, 0, 2, 0, 0, 0, 0, 0, 0],
+    guess: ["", "", ".", ".", ".", "", ".", ".", ""],
     across: {
       1: {
         clue: "one plus one",
         answer: "TWO",
         row: 0,
         col: 0,
+        guess: "",
       },
     },
     down: {
@@ -24,6 +31,7 @@ export const defaultCrosswordsState = {
         answer: "ONE",
         row: 0,
         col: 2,
+        guess: "",
       },
     },
   },
