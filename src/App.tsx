@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import Wordle from "./games/Wordle";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
@@ -38,12 +39,12 @@ export default function App() {
   useEffect(() => {
     dispatch(loadCrosswordsPuzzle());
     dispatch(loadWordleWord());
-    // return () => {
-    //   if(socket) {
-    //     console.log("closing socket");
-    //     socket.close();
-    //   }
-    // }
+    return () => {
+      if(socket) {
+        console.log("closing socket");
+        socket.close();
+      }
+    }
   });
 
   useEffect(() => {

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect } from "react";
 import { Badge, Box, Grid, List, ListItem, ListItemText } from "@mui/material";
 import wordsToNumbers from "words-to-numbers";
@@ -65,7 +66,7 @@ export const Crosswords: React.FunctionComponent<CrosswordsProps> = ({ transcrip
           puzzle.guess[(posR + i) * puzzle.rows + posC] = c;
         }
       }
-      dispatch(setCrosswordsPuzzle(date, {...puzzle}));
+      dispatch(setCrosswordsPuzzle(date, { ...puzzle }));
     }
 
     if (transcript.trim() === "") {
