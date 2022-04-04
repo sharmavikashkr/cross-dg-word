@@ -1,53 +1,16 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import Wordle from "./games/Wordle";
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
-import { ReactNode, SyntheticEvent, useEffect, useState } from "react";
-import { Box, Grid } from "@mui/material";
-import { useDispatch } from "react-redux";
-import { loadCrosswordsPuzzle, loadWordleWord } from "./store";
-import Crosswords from "./games/Crosswords";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { Games } from "./games/Games";
+import "./App.css";
+import { useEffect, useState } from "react";
+import { Grid } from "@mui/material";
 import MicNoneIcon from "@mui/icons-material/MicNone";
-import './App.css';
-
-interface TabPanelProps {
-  children?: ReactNode;
-  index: number;
-  value: number;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index } = props;
-
-  return (
-    <div role="tabpanel" hidden={value !== index}>
-      {value === index && children}
-    </div>
-  );
-}
+import { useNavigate } from "react-router-dom";
 
 export default function App() {
-  const dispatch = useDispatch();
   let socket: WebSocket;
   const mic: any = {};
-
-  const [value, setValue] = useState(0);
   const [transcript, setTranscript] = useState("");
-
-  const handleChange = (event: SyntheticEvent, newValue: number) => {
-    setValue(newValue);
-  };
-
-  useEffect(() => {
-    dispatch(loadCrosswordsPuzzle());
-    dispatch(loadWordleWord());
-    return () => {
-      if (socket) {
-        console.log("closing socket");
-        socket.close();
-      }
-    };
-  });
 
   useEffect(() => {
     async function fetchData() {
@@ -89,14 +52,30 @@ export default function App() {
     console.log("listening..");
     fetchData();
     beginTranscription();
+  }, []);
 
-    return () => {
-      if (socket) {
-        console.log("Closing open socket");
-        socket.close();
-      }
-    };
-  });
+  return (
+    <Router>
+      <Routes>
+        <Route path="/games" element={<Games transcript={transcript} />} />
+        <Route path="/" element={<Home transcript={transcript} />} />
+      </Routes>
+    </Router>
+  );
+}
+
+export interface HomeProps {
+  transcript: string;
+}
+
+export const Home: React.FunctionComponent<HomeProps> = ({ transcript }) => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (transcript === "LET'S PLAY") {
+      navigate("/games");
+    }
+  }, [transcript]);
 
   return (
     <div>
@@ -108,18 +87,15 @@ export default function App() {
         </Grid>
         <hr />
       </header>
-      <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-        <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
-          <Tab label="Crosswords" />
-          <Tab label="Wordle" />
-        </Tabs>
-      </Box>
-      <TabPanel value={value} index={0}>
-        <Crosswords transcript={transcript} />
-      </TabPanel>
-      <TabPanel value={value} index={1}>
-        <Wordle transcript={transcript} />
-      </TabPanel>
+      <Grid container justifyContent={"center"}>
+        <h1>say</h1>
+      </Grid>
+      <Grid container justifyContent={"center"}>
+        <h2>"LET'S PLAY"</h2>
+      </Grid>
+      <Grid container justifyContent={"center"}>
+        <h4>to start playing..</h4>
+      </Grid>
     </div>
   );
-}
+};
