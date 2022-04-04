@@ -3,10 +3,12 @@ import Wordle from "./games/Wordle";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import { ReactNode, SyntheticEvent, useEffect, useState } from "react";
-import { Box } from "@mui/material";
+import { Box, Grid } from "@mui/material";
 import { useDispatch } from "react-redux";
 import { loadCrosswordsPuzzle, loadWordleWord } from "./store";
 import Crosswords from "./games/Crosswords";
+import MicNoneIcon from "@mui/icons-material/MicNone";
+import './App.css';
 
 interface TabPanelProps {
   children?: ReactNode;
@@ -40,11 +42,11 @@ export default function App() {
     dispatch(loadCrosswordsPuzzle());
     dispatch(loadWordleWord());
     return () => {
-      if(socket) {
+      if (socket) {
         console.log("closing socket");
         socket.close();
       }
-    }
+    };
   });
 
   useEffect(() => {
@@ -98,6 +100,14 @@ export default function App() {
 
   return (
     <div>
+      <header>
+        <br />
+        <Grid container justifyContent={"center"}>
+          <MicNoneIcon color="primary" />
+          <b>{transcript}</b>
+        </Grid>
+        <hr />
+      </header>
       <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
         <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
           <Tab label="Crosswords" />

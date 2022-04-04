@@ -15,20 +15,29 @@ export const Wordle: React.FunctionComponent<WordleProps> = ({ transcript }) => 
 
   const word = useSelector((state: RootState) => state.wordleState.word);
   const guessList = useSelector((state: RootState) => state.wordleState.guessList);
-  
-  const [open, setOpen] = React.useState(false);
 
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
+  const [open, setOpen] = React.useState(false);
+  const [won, setWon] = React.useState(false);
 
   const handleClose = () => {
     setOpen(false);
   };
 
   useEffect(() => {
+    if (guessList.length >= 6 || (guessList.length > 0 && guessList[guessList.length - 1].guessStatus === "ggggg")) {
+      if (guessList[guessList.length - 1].guessStatus === "ggggg") {
+        setWon(true);
+      }
+      setOpen(true);
+    }
+  }, [guessList]);
+
+  useEffect(() => {
     function fillWord(transcript: string) {
       let commanArr = transcript.split(" ");
+      if(guessList.length >= 6) {
+        return;
+      }
       if (commanArr.length > 1) {
         return;
       }
@@ -52,9 +61,6 @@ export const Wordle: React.FunctionComponent<WordleProps> = ({ transcript }) => 
           guessStatus: guessStatus,
         })
       );
-      if (guessList.length >= 5 || guessStatus === "ggggg") {
-        handleClickOpen();
-      }
     }
 
     function getLetterStatus(letter: string, index: number): string {
@@ -90,9 +96,9 @@ export const Wordle: React.FunctionComponent<WordleProps> = ({ transcript }) => 
         {/* <Grid container justifyContent="center">
           {JSON.stringify(guessList)}
         </Grid> */}
-        <Grid container spacing={0} justifyContent="center">
+        {/* <Grid container spacing={0} justifyContent="center">
           {transcript}
-        </Grid>
+        </Grid> */}
         <br />
         <Grid container spacing={0} justifyContent="center">
           <Grid item xs={0} sm={2} md={3} lg={4} xl={4}></Grid>
@@ -147,18 +153,46 @@ export const Wordle: React.FunctionComponent<WordleProps> = ({ transcript }) => 
           <Grid item xs={0} sm={2} md={3} lg={4} xl={4}></Grid>
         </Grid>
       </Grid>
-      <Dialog open={open} onClose={handleClose} aria-labelledby="alert-dialog-title" aria-describedby="alert-dialog-description">
-        <DialogTitle id="alert-dialog-title">{"Use Google's location service?"}</DialogTitle>
+      <Dialog open={open} onClose={handleClose}>
+        <DialogTitle>
+          <h3>{won ? "Congratulations!!" : "Oops!!"}</h3>
+        </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            Let Google help apps determine location. This means sending anonymous location data to Google, even when no apps are running.
+            <Grid container justifyContent={"center"}>
+              The wordle is: <b>{word}</b>
+            </Grid>
+            <hr />
+            <Grid container justifyContent={"center"}>
+              <b>{"GUESS CONTRIBUTION"}</b>
+            </Grid>
+            <Grid>
+              <Grid container>Wordle [{guessList.length}/6]</Grid>
+              <br />
+              {guessList.map((guess, row) => (
+                <div>
+                  <Grid key={row} container justifyContent="center">
+                    {[0, 1, 2, 3, 4].map((row, col) => (
+                      <Grid key={row + "-" + col} item xs={2}>
+                        <Box
+                          sx={{
+                            width: 20,
+                            height: 20,
+                            backgroundColor:
+                              guess.guessStatus[col] === "g" ? "#6AAA64" : guess.guessStatus[col] === "y" ? "#C9B458" : "#787C7E",
+                          }}
+                        ></Box>
+                      </Grid>
+                    ))}
+                  </Grid>
+                  <br />
+                </div>
+              ))}
+            </Grid>
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Disagree</Button>
-          <Button onClick={handleClose} autoFocus>
-            Agree
-          </Button>
+          <Button onClick={handleClose}>Close</Button>
         </DialogActions>
       </Dialog>
     </Container>

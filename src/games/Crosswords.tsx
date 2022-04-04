@@ -97,9 +97,10 @@ export const Crosswords: React.FunctionComponent<CrosswordsProps> = ({ transcrip
         <Grid container spacing={0} justifyContent="center">
           {error}
         </Grid>
-        <Grid container spacing={0} justifyContent="center">
+        {/* <Grid container spacing={0} justifyContent="center">
           {transcript}
-        </Grid>
+        </Grid> */}
+        <br />
         <Grid container justifyContent="center">
           {puzzle && width >= 1300 && (
             <Grid container justifyContent="center">
@@ -148,7 +149,7 @@ export const Crosswords: React.FunctionComponent<CrosswordsProps> = ({ transcrip
                                 color="default"
                               ></Badge>
                               <Grid container spacing={0} justifyContent="center">
-                                {puzzle.guess[rowIndex * puzzle.rows + colIndex]}
+                                <b>{puzzle.guess[rowIndex * puzzle.rows + colIndex]}</b>
                               </Grid>
                             </Grid>
                           </Box>
@@ -214,7 +215,7 @@ export const Crosswords: React.FunctionComponent<CrosswordsProps> = ({ transcrip
                                 alignItems="center"
                                 justifyContent="center"
                               >
-                                {puzzle.guess[rowIndex * puzzle.rows + colIndex]}
+                                <b>{puzzle.guess[rowIndex * puzzle.rows + colIndex]}</b>
                               </Grid>
                             </Grid>
                           </Box>
