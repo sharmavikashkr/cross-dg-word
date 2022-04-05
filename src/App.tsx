@@ -23,7 +23,7 @@ export default function App() {
     }
 
     async function beginTranscription() {
-      const key = await fetch("https://crosswords-dg.azurewebsites.net/api/deepgramkeyapi").then((r) => r.text());
+      const key = await fetch("https://dgwordgames.azurewebsites.net/api/deepgramkeyapi").then((r) => r.text());
       if (socket) {
         socket.close();
       }

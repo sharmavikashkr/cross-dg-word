@@ -6,7 +6,7 @@ on:
       - master
 
 env:
-  STORAGE_ACCOUNT: crosswordsdg
+  STORAGE_ACCOUNT: dgwordgames
 
 jobs:
   build-and-deploy:
