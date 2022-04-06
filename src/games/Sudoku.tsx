@@ -57,6 +57,10 @@ export const Sudoku: React.FunctionComponent<SudokuProps> = ({ transcript }) => 
         dispatch(setSudokuError("Command numbers not in valid range [1,9]"));
         return;
       }
+      if (puzzle.board[row - 1][column - 1] !== 0) {
+        dispatch(setSudokuError("Cell is not empty"));
+        return;
+      }
 
       dispatch(setSudokuError(""));
 

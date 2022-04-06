@@ -21,19 +21,19 @@ export const Crosswords: React.FunctionComponent<CrosswordsProps> = ({ transcrip
 
   useEffect(() => {
     function fillWord(transcript: string, direction: string) {
-      let commanArr = transcript.split(direction);
-      if (commanArr.length !== 2) {
+      let commandArr = transcript.split(direction);
+      if (commandArr.length !== 2) {
         dispatch(setCrosswordsError("Incorrect input; Command Hint: 'twenty five across blend'"));
         return;
       }
-      console.log("command array", commanArr);
+      console.log("command array", commandArr);
 
-      let boxnum = wordsToNumbers(commanArr[0]);
+      let boxnum = wordsToNumbers(commandArr[0]);
       if (typeof boxnum === "string") {
         boxnum = parseInt(boxnum);
       }
       if (typeof boxnum !== "number" || isNaN(boxnum)) {
-        dispatch(setCrosswordsError("Incorrect cell number; Command Hint: twenty five across blend"));
+        dispatch(setCrosswordsError("Incorrect cell number; Command Hint: 'twenty five across blend'"));
         return;
       }
       console.log("box number", boxnum);
@@ -43,7 +43,7 @@ export const Crosswords: React.FunctionComponent<CrosswordsProps> = ({ transcrip
         return;
       }
 
-      const guess = commanArr[1].replaceAll(" ", "").replace(",", "").replace(".", "");
+      const guess = commandArr[1].replaceAll(" ", "").replace(",", "").replace(".", "");
       console.log("guess", guess);
       if (direction === "ACROSS") {
         console.log("hint", puzzle.across);
