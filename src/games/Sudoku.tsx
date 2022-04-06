@@ -4,7 +4,7 @@ import { Box, Grid, Typography } from "@mui/material";
 import wordsToNumbers from "words-to-numbers";
 import { RootState } from "../store/utils";
 import { useDispatch, useSelector } from "react-redux";
-import { setSudokuPuzzle } from "../store";
+import { setSudokuError, setSudokuPuzzle } from "../store";
 
 export interface SudokuProps {
   transcript: string;
@@ -21,6 +21,7 @@ export const Sudoku: React.FunctionComponent<SudokuProps> = ({ transcript }) => 
     function fillCell(transcript: string) {
       let commanArr = transcript.split(" ");
       if (commanArr.length < 4 || commanArr[1] !== "CROSS") {
+        dispatch(setSudokuError("Incorrect input; Command Hint: 'five cross two seven'"));
         return;
       }
       console.log("command array", commanArr);
@@ -47,9 +48,17 @@ export const Sudoku: React.FunctionComponent<SudokuProps> = ({ transcript }) => 
         typeof guess !== "number" ||
         isNaN(guess)
       ) {
+        dispatch(setSudokuError("Incorrect numbers in command"));
         return;
       }
       console.log("row", row, "column", column, "guess", guess);
+
+      if (row < 1 || row > 9 || column < 1 || column > 9 || guess < 1 || guess > 9) {
+        dispatch(setSudokuError("Command numbers not in valid range [1,9]"));
+        return;
+      }
+
+      dispatch(setSudokuError(""));
 
       puzzle.board[row - 1][column - 1] = guess;
       dispatch(setSudokuPuzzle(difficulty, { ...puzzle }));
@@ -72,8 +81,9 @@ export const Sudoku: React.FunctionComponent<SudokuProps> = ({ transcript }) => 
           <h4>{difficulty}</h4>
         </Grid>
         <Grid container spacing={0} justifyContent="center">
-          {error}
+          <Box sx={{ color: "error.main" }}>{error}</Box>
         </Grid>
+        <br />
         <br />
         <Grid container spacing={0} justifyContent="center">
           <Grid item xs={0} sm={2}></Grid>

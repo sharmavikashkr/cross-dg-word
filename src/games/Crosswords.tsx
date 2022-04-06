@@ -5,7 +5,7 @@ import wordsToNumbers from "words-to-numbers";
 import useWindowDimensions from "../UseWindowDimentions";
 import { RootState } from "../store/utils";
 import { useDispatch, useSelector } from "react-redux";
-import { setCrosswordsPuzzle } from "../store";
+import { setCrosswordsError, setCrosswordsPuzzle } from "../store";
 
 export interface CrosswordsProps {
   transcript: string;
@@ -22,7 +22,8 @@ export const Crosswords: React.FunctionComponent<CrosswordsProps> = ({ transcrip
   useEffect(() => {
     function fillWord(transcript: string, direction: string) {
       let commanArr = transcript.split(direction);
-      if (commanArr.length < 2) {
+      if (commanArr.length !== 2) {
+        dispatch(setCrosswordsError("Incorrect input; Command Hint: 'twenty five across blend'"));
         return;
       }
       console.log("command array", commanArr);
@@ -32,19 +33,31 @@ export const Crosswords: React.FunctionComponent<CrosswordsProps> = ({ transcrip
         boxnum = parseInt(boxnum);
       }
       if (typeof boxnum !== "number" || isNaN(boxnum)) {
+        dispatch(setCrosswordsError("Incorrect cell number; Command Hint: twenty five across blend"));
         return;
       }
       console.log("box number", boxnum);
+
+      if (boxnum < 1 || boxnum > 80) {
+        dispatch(setCrosswordsError("Cell number crossed upper limit (80)"));
+        return;
+      }
 
       const guess = commanArr[1].replaceAll(" ", "").replace(",", "").replace(".", "");
       console.log("guess", guess);
       if (direction === "ACROSS") {
         console.log("hint", puzzle.across);
-        const answer = puzzle.across[boxnum].answer;
+        const answer = puzzle.across[boxnum]?.answer;
         console.log("answer", answer);
-        if (answer.length !== guess.length) {
+        if (answer === undefined) {
+          dispatch(setCrosswordsError("Incorrect clue number"));
           return;
         }
+        if (answer.length !== guess.length) {
+          dispatch(setCrosswordsError("Word length mismatch"));
+          return;
+        }
+        dispatch(setCrosswordsError(""));
         puzzle.across[boxnum].guess = guess;
         const posR = puzzle.across[boxnum].row;
         const posC = puzzle.across[boxnum].col;
@@ -53,11 +66,17 @@ export const Crosswords: React.FunctionComponent<CrosswordsProps> = ({ transcrip
           puzzle.guess[posR * puzzle.rows + posC + i] = c;
         }
       } else if (direction === "DOWN") {
-        const answer = puzzle.down[boxnum].answer;
+        const answer = puzzle.down[boxnum]?.answer;
         console.log("answer", answer);
-        if (answer.length !== guess.length) {
+        if (answer === undefined) {
+          dispatch(setCrosswordsError("Incorrect clue number"));
           return;
         }
+        if (answer.length !== guess.length) {
+          dispatch(setCrosswordsError("Word length mismatch"));
+          return;
+        }
+        dispatch(setCrosswordsError(""));
         puzzle.down[boxnum].guess = guess;
         const posR = puzzle.down[boxnum].row;
         const posC = puzzle.down[boxnum].col;
@@ -77,8 +96,6 @@ export const Crosswords: React.FunctionComponent<CrosswordsProps> = ({ transcrip
       fillWord(transcript, "ACROSS");
     } else if (transcript.includes("DOWN")) {
       fillWord(transcript, "DOWN");
-    } else if (transcript.includes("RESET")) {
-      // crosswordProvider.current?.reset();
     } else if (transcript.includes("VALIDATE")) {
       // const isCorrect = crosswordProvider.current?.isCrosswordCorrect();
       // console.log("isCorrect", isCorrect);
@@ -95,8 +112,9 @@ export const Crosswords: React.FunctionComponent<CrosswordsProps> = ({ transcrip
           <h4>{puzzle.title}</h4>
         </Grid>
         <Grid container spacing={0} justifyContent="center">
-          {error}
+          <Box sx={{ color: "error.main" }}>{error}</Box>
         </Grid>
+        <br />
         <br />
         <Grid container justifyContent="center">
           {puzzle && width >= 1300 && (

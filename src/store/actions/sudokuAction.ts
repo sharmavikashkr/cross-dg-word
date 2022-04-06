@@ -15,7 +15,6 @@ export function setSudokuPuzzle(difficulty: string, puzzle: SudokuPuzzleType): S
   };
 }
 
-
 export function setSudokuError(error: string): SudokuActionTypes {
   return {
     type: SET_SUDOKU_ERROR,

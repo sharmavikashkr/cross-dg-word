@@ -1,10 +1,5 @@
 import { WordleGuessType } from "../../interfaces/wordleGuessType";
-import {
-  WordleActionTypes,
-  LOAD_WORDLE_WORD,
-  SET_WORDLE_WORD,
-  ADD_WORDLE_GUESS,
-} from "./wordleActionTypes";
+import { WordleActionTypes, LOAD_WORDLE_WORD, SET_WORDLE_WORD, ADD_WORDLE_GUESS, SET_WORDLE_ERROR } from "./wordleActionTypes";
 
 export function loadWordleWord(): WordleActionTypes {
   return {
@@ -23,5 +18,12 @@ export function addWordleGuess(guess: WordleGuessType): WordleActionTypes {
   return {
     type: ADD_WORDLE_GUESS,
     guess: guess,
+  };
+}
+
+export function setWordleError(error: string): WordleActionTypes {
+  return {
+    type: SET_WORDLE_ERROR,
+    error: error,
   };
 }

@@ -4,7 +4,7 @@ import Typography from "@mui/material/Typography";
 import { Container, Grid, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../store/utils";
-import { addWordleGuess } from "../store";
+import { addWordleGuess, setWordleError } from "../store";
 
 export interface WordleProps {
   transcript: string;
@@ -15,6 +15,7 @@ export const Wordle: React.FunctionComponent<WordleProps> = ({ transcript }) => 
 
   const word = useSelector((state: RootState) => state.wordleState.word);
   const guessList = useSelector((state: RootState) => state.wordleState.guessList);
+  const error = useSelector((state: RootState) => state.wordleState.error);
 
   const [open, setOpen] = React.useState(false);
   const [won, setWon] = React.useState(false);
@@ -35,22 +36,27 @@ export const Wordle: React.FunctionComponent<WordleProps> = ({ transcript }) => 
   useEffect(() => {
     function fillWord(transcript: string) {
       let commanArr = transcript.split(" ");
-      if(guessList.length >= 6) {
+      if (guessList.length >= 6) {
+        dispatch(setWordleError("Maximun attempt reached"));
         return;
       }
       if (commanArr.length > 1) {
+        dispatch(setWordleError("Incorrect input; Command Hint: 'wrong'"));
         return;
       }
       const alreadyGuessed = guessList.filter((word) => word.guessWord === transcript);
       if (alreadyGuessed.length > 0) {
+        dispatch(setWordleError("Word already guessed"));
         return;
       }
       console.log("command array", commanArr);
       const guessWord = commanArr[0].replace(",", "").replace(".", "").replace("?", "");
       console.log("guessWord", guessWord);
       if (word.length !== guessWord.length) {
+        dispatch(setWordleError("Word length mismatch"));
         return;
       }
+      dispatch(setWordleError(""));
       let guessStatus = "";
       for (let i = 0; i < guessWord.length; i++) {
         guessStatus += getLetterStatus(guessWord[i], i);
@@ -96,6 +102,10 @@ export const Wordle: React.FunctionComponent<WordleProps> = ({ transcript }) => 
         {/* <Grid container justifyContent="center">
           {JSON.stringify(guessList)}
         </Grid> */}
+        <Grid container spacing={0} justifyContent="center">
+          <Box sx={{ color: "error.main" }}>{error}</Box>
+        </Grid>
+        <br />
         <br />
         <Grid container spacing={0} justifyContent="center">
           <Grid item xs={0} sm={2} md={3} lg={4} xl={4}></Grid>
