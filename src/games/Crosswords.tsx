@@ -83,7 +83,7 @@ export const Crosswords: React.FunctionComponent<CrosswordsProps> = ({ transcrip
       // const isCorrect = crosswordProvider.current?.isCrosswordCorrect();
       // console.log("isCorrect", isCorrect);
     }
-  }, [transcript, puzzle]);
+  }, [transcript]);
 
   return (
     <div key={"crosswords-game-container"} style={{ margin: "20px" }}>
@@ -97,9 +97,6 @@ export const Crosswords: React.FunctionComponent<CrosswordsProps> = ({ transcrip
         <Grid container spacing={0} justifyContent="center">
           {error}
         </Grid>
-        {/* <Grid container spacing={0} justifyContent="center">
-          {transcript}
-        </Grid> */}
         <br />
         <Grid container justifyContent="center">
           {puzzle && width >= 1300 && (

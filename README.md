@@ -8,16 +8,21 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 ### What
 
-This project uses [Deepgram](https://deepgram.com/)'s realtime STT transcription API to enable playing the two most popular word games in the world:
+This project uses [Deepgram](https://deepgram.com/)'s realtime STT transcription API to enable playing the three most popular word/number games in the world:
 
 - Crosswords
 - Wordle
+- Sudoku
 
 ### How
 
 This app is built in react.
 
-It pre-loads the a random Crosswords puzzle from [this repo](https://github.com/doshea/nyt_crosswords/) and a wordle word from [this list](src/store/constants/wordleWords.js).
+It pre-loads:
+- a random Crosswords puzzle from [this repo](https://github.com/doshea/nyt_crosswords/)
+- a wordle word from [this list](src/store/constants/wordleWords.js).
+- a random dusoku puzzle from [this api](https://github.com/bertoort/sugoku)
+
 Then, root component transcripts the user's speech in realtime and passes the transcription results to each game components. It requests for key from another [API](https://github.com/sharmavikashkr/dgwordgames-api)
 
 #### Crosswords
@@ -33,6 +38,13 @@ The wordle puzzle can be played by speaking out just the guess.
 Eg. **"blend"**
 - It will check if the guess word's (in this case, "blend") length is equal to 5.
 - It will add the guess to the guesslist.
+
+#### Sudoku
+The wordle puzzle can be played by speaking out position with the guess.
+Eg. **"five cross two seven"**
+- It uses a [words-to-numbers](https://www.npmjs.com/package/words-to-numbers) library to convert the number in words to integers.
+- It will find the position of the guess by finding row and column separated by "cross".
+- It will put the guess in it's box position.
 
 -------------------------------
 

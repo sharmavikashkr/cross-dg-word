@@ -5,9 +5,10 @@ import Tab from "@mui/material/Tab";
 import { ReactNode, SyntheticEvent, useEffect, useState } from "react";
 import { Box, Grid } from "@mui/material";
 import { useDispatch } from "react-redux";
-import { loadCrosswordsPuzzle, loadWordleWord } from "../store";
+import { loadCrosswordsPuzzle, loadSudokuPuzzle, loadWordleWord } from "../store";
 import Crosswords from "./Crosswords";
 import MicNoneIcon from "@mui/icons-material/MicNone";
+import Sudoku from "./Sudoku";
 
 interface TabPanelProps {
   children?: ReactNode;
@@ -41,6 +42,7 @@ export const Games: React.FunctionComponent<GamesProps> = ({ transcript }) => {
   useEffect(() => {
     dispatch(loadCrosswordsPuzzle());
     dispatch(loadWordleWord());
+    dispatch(loadSudokuPuzzle());
   });
 
   return (
@@ -57,6 +59,7 @@ export const Games: React.FunctionComponent<GamesProps> = ({ transcript }) => {
         <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
           <Tab label="Crosswords" />
           <Tab label="Wordle" />
+          <Tab label="Sudoku" />
         </Tabs>
       </Box>
       <TabPanel value={value} index={0}>
@@ -64,6 +67,9 @@ export const Games: React.FunctionComponent<GamesProps> = ({ transcript }) => {
       </TabPanel>
       <TabPanel value={value} index={1}>
         <Wordle transcript={transcript} />
+      </TabPanel>
+      <TabPanel value={value} index={2}>
+        <Sudoku transcript={transcript} />
       </TabPanel>
     </div>
   );

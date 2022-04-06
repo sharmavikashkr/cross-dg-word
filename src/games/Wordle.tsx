@@ -96,18 +96,15 @@ export const Wordle: React.FunctionComponent<WordleProps> = ({ transcript }) => 
         {/* <Grid container justifyContent="center">
           {JSON.stringify(guessList)}
         </Grid> */}
-        {/* <Grid container spacing={0} justifyContent="center">
-          {transcript}
-        </Grid> */}
         <br />
         <Grid container spacing={0} justifyContent="center">
           <Grid item xs={0} sm={2} md={3} lg={4} xl={4}></Grid>
           <Grid item xs={12} sm={8} md={6} lg={4} xl={4}>
             <Grid item xs={1}></Grid>
-            {[0, 1, 2, 3, 4, 5].map((row, rowIndex) => (
+            {Array.from({ length: 6 }).map((row, rowIndex) => (
               <div key={rowIndex}>
                 <Grid container justifyContent="center">
-                  {[0, 1, 2, 3, 4].map((column, letterIndex) => (
+                  {Array.from({ length: 5 }).map((column, letterIndex) => (
                     <Grid key={rowIndex + "-" + letterIndex} item xs={2}>
                       <Box
                         sx={{

@@ -1,7 +1,7 @@
 import { CrosswordsPuzzleType } from "../../interfaces/crosswordsPuzzleType";
 
-export const LOAD_CROSSWORDS_PUZZLE = "LOAD_CROSSWORD_PUZZLE";
-export const SET_CROSSWORDS_PUZZLE = "SET_CROSSWORD_PUZZLE";
+export const LOAD_CROSSWORDS_PUZZLE = "LOAD_CROSSWORDS_PUZZLE";
+export const SET_CROSSWORDS_PUZZLE = "SET_CROSSWORDS_PUZZLE";
 export const SET_CROSSWORDS_ERROR = "SET_CROSSWORDS_ERROR";
 
 export interface LoadCrosswordsPuzzleAction {
