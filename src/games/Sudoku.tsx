@@ -5,12 +5,14 @@ import wordsToNumbers from "words-to-numbers";
 import { RootState } from "../store/utils";
 import { useDispatch, useSelector } from "react-redux";
 import { setSudokuError, setSudokuPuzzle } from "../store";
+import useWindowDimensions from "../UseWindowDimentions";
 
 export interface SudokuProps {
   transcript: string;
 }
 
 export const Sudoku: React.FunctionComponent<SudokuProps> = ({ transcript }) => {
+  const { width } = useWindowDimensions();
   const dispatch = useDispatch();
 
   const difficulty = useSelector((state: RootState) => state.sudokuState.difficulty);
@@ -99,8 +101,8 @@ export const Sudoku: React.FunctionComponent<SudokuProps> = ({ transcript }) => 
                     <Grid key={rowIndex + "-" + colIndex} item>
                       <Box
                         sx={{
-                          width: 40,
-                          height: 40,
+                          width: width < 700 ? 35 : 50,
+                          height: width < 700 ? 35 : 50,
                           border: "0.5px solid grey",
                           borderLeft: colIndex === 0 ? "1px solid black" : undefined,
                           borderRight: (colIndex + 1) % 3 === 0 ? "1px solid black" : undefined,
