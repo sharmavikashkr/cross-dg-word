@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { Games } from "./games/Games";
 import "./App.css";
 import { useEffect, useState } from "react";
-import { Grid } from "@mui/material";
+import { Grid, Link } from "@mui/material";
 import MicNoneIcon from "@mui/icons-material/MicNone";
 import { useNavigate } from "react-router-dom";
 
@@ -92,6 +92,12 @@ export const Home: React.FunctionComponent<HomeProps> = ({ transcript }) => {
       </Grid>
       <Grid container justifyContent={"center"}>
         <h2>"LET'S PLAY"</h2>
+      </Grid>
+      <Grid container justifyContent={"center"}>
+        <h1>OR</h1>
+      </Grid>
+      <Grid container justifyContent={"center"}>
+        <Link href="/games"> click here</Link>
       </Grid>
       <Grid container justifyContent={"center"}>
         <h4>to start playing..</h4>

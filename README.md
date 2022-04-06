@@ -18,7 +18,7 @@ This project uses [Deepgram](https://deepgram.com/)'s realtime STT transcription
 
 This app is built in react.
 
-It pre-loads:
+It pre-loads in the redux store:
 - a random Crosswords puzzle from [this repo](https://github.com/doshea/nyt_crosswords/)
 - a wordle word from [this list](src/store/constants/wordleWords.js).
 - a random dusoku puzzle from [this api](https://github.com/bertoort/sugoku)
