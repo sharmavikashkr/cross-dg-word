@@ -101,7 +101,11 @@ export const Sudoku: React.FunctionComponent<SudokuProps> = ({ transcript }) => 
                         sx={{
                           width: 40,
                           height: 40,
-                          border: "1px solid #D3d6DA",
+                          border: "0.5px solid grey",
+                          borderLeft: colIndex === 0 ? "1px solid black" : undefined,
+                          borderRight: (colIndex + 1) % 3 === 0 ? "1px solid black" : undefined,
+                          borderTop: rowIndex === 0 ? "1px solid black" : undefined,
+                          borderBottom: (rowIndex + 1) % 3 === 0 ? "1px solid black" : undefined,
                           "&:hover": {
                             backgroundColor: "#D3d6DA",
                             opacity: [0.9, 0.8, 0.7],
