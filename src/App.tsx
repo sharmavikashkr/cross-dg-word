@@ -72,7 +72,7 @@ export const Home: React.FunctionComponent<HomeProps> = ({ transcript }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (transcript === "LET'S PLAY") {
+    if (transcript.includes("LET'S PLAY")) {
       navigate("/games");
     }
   }, [transcript]);
