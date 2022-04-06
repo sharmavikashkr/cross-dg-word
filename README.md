@@ -15,7 +15,10 @@ This project uses [Deepgram](https://deepgram.com/)'s realtime STT transcription
 
 ### How
 
-This app is built in react. The root component transcripts the user's speech in realtime and passes the transcription results to each game components. It requests for key from another [API](https://github.com/sharmavikashkr/dgwordgames-api)
+This app is built in react.
+
+It pre-loads the a random Crosswords puzzle from [this repo](https://github.com/doshea/nyt_crosswords/) and a wordle word from [this list](src/store/constants/wordleWords.js).
+Then, root component transcripts the user's speech in realtime and passes the transcription results to each game components. It requests for key from another [API](https://github.com/sharmavikashkr/dgwordgames-api)
 
 #### Crosswords
 The crosswords puzzle can be played by speaking out your guesses.
